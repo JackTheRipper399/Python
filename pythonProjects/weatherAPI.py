@@ -1,4 +1,5 @@
 import sys
+import os
 import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
 from PyQt5.QtCore import Qt
@@ -71,14 +72,28 @@ class WeatherApp(QWidget):
 
         self.get_weather_button.clicked.connect(self.get_weather)
 
+    @staticmethod
+    def load_api_key(path="pythonProjects/APIkey.txt"):
+        try:
+            with open(path, "r") as f:
+                key = f.read().strip()
+                if not key:
+                    raise ValueError("API key file is empty")
+                return key
+        except FileNotFoundError:
+            raise RuntimeError(f"API key file not found at {path}")
+
     def get_weather(self):
 
-        api_key = "5b80f5bfef6c6880bc9dd5bdabab3fb4"
+        api_key = self.load_api_key()
         city = self.city_input.text()
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
 
         try:
             response = requests.get(url)
+            print("→ Request URL:", response.request.url)
+            print("→ Status code: ", response.status_code)
+            print("→ Response body:", response.text)
             response.raise_for_status()
             data = response.json()
 
